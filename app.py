@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -30,18 +30,25 @@ def index():
     todo_list = Todo.query.all()
     print(todo_list)
     # Render and return template
-    return render_template('base.html')
+    return render_template('base.html', todo_list=todo_list)
+
+
+@app.route("/add", methods=["POST"])
+def add():
+    # add new item
+    # get title from the form. Import request for this
+    title = request.form.get("title")
+    new_todo = Todo(title=title, complete=False)
+    db.session.add(new_todo)
+    db.session.commit()
+    # import redirect and url_for. Redirects user to index page.
+    return redirect(url_for("index"))
 
 
 if __name__ == "__main__":
     with app.app_context():
         # Initialize database tables from SQLAlchemy models
         db.create_all()
-
-        # Optional: Add a sample todo item
-        new_todo = Todo(title="todo 1", complete=False)
-        db.session.add(new_todo)
-        db.session.commit()
 
     # Start the Flask server with debug mode enabled
     app.run(debug=True)
